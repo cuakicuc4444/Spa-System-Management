@@ -79,7 +79,6 @@ export default function BookingDetail({
             (sum, item) => sum + (item.unitPrice * item.quantity - (item.discount || 0)), 0
         ) || 0;
 
-        // Sử dụng orderDiscount thay vì tính từ items
         const totalDiscount = orderDiscount || 0;
 
         const afterDiscount = subtotal - totalDiscount;

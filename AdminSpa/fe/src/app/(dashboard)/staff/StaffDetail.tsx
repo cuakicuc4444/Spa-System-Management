@@ -10,6 +10,7 @@ import {
     Save, ArrowBack, Person, Phone, Email,
     Store, AccountBalanceWallet, CalendarToday, PhotoCamera
 } from "@mui/icons-material";
+import { NumericFormat } from "react-number-format";
 import {
     Staff, StaffFormData, StaffStatus,
     SalaryType, Gender
@@ -267,9 +268,16 @@ export default function StaffDetail({
                                 </FormControl>
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
-                                <TextField
-                                    fullWidth label="Base Salary" type="number"
-                                    value={formData.base_salary} onChange={handleChange("base_salary")}
+                                <NumericFormat
+                                    customInput={TextField}
+                                    fullWidth
+                                    label="Base Salary"
+                                    value={formData.base_salary}
+                                    onValueChange={(values) => {
+                                        setFormData(prev => ({ ...prev, base_salary: values.floatValue || 0 }));
+                                        if (errors.base_salary) setErrors(prev => ({ ...prev, base_salary: undefined }));
+                                    }}
+                                    thousandSeparator=","
                                     disabled={isView}
                                     InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                                 />

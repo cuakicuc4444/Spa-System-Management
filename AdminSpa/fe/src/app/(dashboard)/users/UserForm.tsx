@@ -180,6 +180,7 @@ export default function UsersPage() {
 
   const [users, setUsers] = useState<User[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [aggregateStats, setAggregateStats] = useState({ active: 0, admins: 0 });
   const [availableStaff, setAvailableStaff] = useState<Staff[]>([]);
   const [availableStores, setAvailableStores] = useState<StoreType[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -331,14 +332,41 @@ export default function UsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  const stats = {
-    total: users.length,
-    active: users.filter((u) => u.is_active && !u.is_locked).length,
-    locked: users.filter((u) => u.is_locked).length,
-    admins: users.filter(
-      (u) => u.role === "super_admin" || u.role === "store_admin"
-    ).length,
-  };
+  useEffect(() => {
+    const fetchStats = async () => {
+      const filters = {
+        search: searchQuery,
+        role: filterRole,
+        is_active:
+          filterStatus === "active" || filterStatus === "locked"
+            ? "true"
+            : filterStatus === "inactive"
+              ? "false"
+              : undefined,
+        is_locked: filterStatus === "locked" ? true : undefined,
+        page: 1,
+        limit: 99999, // Request a very large page size to get all users
+      };
+
+      try {
+        const apiResponse = await usersApi.getAll(filters);
+        const responseData: UserResponse['data'] = apiResponse.data || { data: [], total: 0, page: 0, limit: 0 };
+        const allMatchingUsers = responseData.data || [];
+
+        setAggregateStats({
+          active: allMatchingUsers.filter((u: User) => u.is_active && !u.is_locked).length,
+          admins: allMatchingUsers.filter(
+            (u: User) => u.role === "super_admin" || u.role === "store_admin"
+          ).length,
+        });
+      } catch (error) {
+        console.error("Failed to fetch aggregate user stats:", error);
+        setAggregateStats({ active: 0, admins: 0 });
+      }
+    };
+
+    fetchStats();
+  }, [searchQuery, filterRole, filterStatus]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, user: User) => {
     setAnchorEl(event.currentTarget);
@@ -689,7 +717,7 @@ export default function UsersPage() {
                       Total Users
                     </Typography>
                     <Typography variant="h4" fontWeight="bold">
-                      {stats.total}
+                      {totalUsers}
                     </Typography>
                   </Box>
                   <Avatar
@@ -728,7 +756,7 @@ export default function UsersPage() {
                       fontWeight="bold"
                       color={SUCCESS_COLOR}
                     >
-                      {stats.active}
+                      {aggregateStats.active}
                     </Typography>
                   </Box>
                   <Avatar
@@ -806,7 +834,7 @@ export default function UsersPage() {
                       fontWeight="bold"
                       color={INFO_COLOR}
                     >
-                      {stats.admins}
+                      {aggregateStats.admins}
                     </Typography>
                   </Box>
                   <Avatar

@@ -11,6 +11,7 @@ import {
   Save, ArrowBack, Spa, Image as ImageIcon, Description,
   Schedule, AttachMoney, Discount
 } from '@mui/icons-material';
+import { NumericFormat } from 'react-number-format';
 import {
   Service, ServiceCategory, ServiceStatus, CreateServiceDto, UpdateServiceDto
 } from '@/types';
@@ -147,18 +148,29 @@ export default function ServiceDetail({
               </Grid>
 
               <Grid size={{xs: 12, sm: 6}}>
-                <TextField
-                  fullWidth label="Regular Price *" type="number"
-                  value={formData.price} onChange={handleTextFieldChange("price")}
+                <NumericFormat
+                  customInput={TextField}
+                  fullWidth label="Regular Price *"
+                  value={formData.price}
+                  onValueChange={(values) => {
+                    setFormData(prev => ({ ...prev, price: values.value }));
+                    if (errors.price) setErrors(prev => ({ ...prev, price: undefined }));
+                  }}
+                  thousandSeparator=","
                   disabled={isView} error={!!errors.price}
                   InputProps={{ startAdornment: <InputAdornment position="start"><AttachMoney fontSize="small" /></InputAdornment> }}
                 />
               </Grid>
 
            <Grid size={{xs: 12, sm: 6}}>
-                <TextField
-                  fullWidth label="Discount Price" type="number"
-                  value={formData.discountPrice} onChange={handleTextFieldChange("discountPrice")}
+                <NumericFormat
+                  customInput={TextField}
+                  fullWidth label="Discount Price"
+                  value={formData.discountPrice}
+                  onValueChange={(values) => {
+                    setFormData(prev => ({ ...prev, discountPrice: values.value }));
+                  }}
+                  thousandSeparator=","
                   disabled={isView}
                   InputProps={{ startAdornment: <InputAdornment position="start"><Discount fontSize="small" /></InputAdornment> }}
                 />
